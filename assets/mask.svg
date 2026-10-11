@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 380" role="img"><rect width="300" height="380" fill="#fff"/>
+<path d="M150 20 C 70 20 30 80 34 160 C 38 250 90 350 150 360 C 210 350 262 250 266 160 C 270 80 230 20 150 20 Z" fill="#fbf6e8" stroke="#333" stroke-width="4"/>
+<ellipse cx="105" cy="140" rx="30" ry="20" fill="#fff" stroke="#333" stroke-width="4"/><ellipse cx="195" cy="140" rx="30" ry="20" fill="#fff" stroke="#333" stroke-width="4"/>
+<path d="M150 150 L135 215 L165 215 Z" fill="none" stroke="#999" stroke-width="3" stroke-dasharray="6 5"/>
+<ellipse cx="150" cy="275" rx="40" ry="24" fill="#fff" stroke="#333" stroke-width="4"/>
+<text x="150" y="378" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#999">holes for eyes and mouth</text></svg>

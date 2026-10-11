@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Create pupil accounts</title>
+  <style>
+    body { font: 17px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; background: #f6f1e7; color: #1f2a37; max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+    .card { background: #fff; border: 1px solid #e2d8c4; border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin: 10px 0 4px; }
+    input { min-height: 44px; padding: 0 12px; font: inherit; border: 2px solid #e2d8c4; border-radius: 10px; width: 100%; box-sizing: border-box; }
+    button { min-height: 48px; padding: 0 20px; font: inherit; font-weight: 700; border: 0; border-radius: 10px; background: #b9552e; color: #fff; margin-top: 16px; cursor: pointer; }
+    button:disabled { opacity: .5; }
+    pre { background: #1f2a37; color: #e8f1f7; padding: 12px; border-radius: 10px; max-height: 340px; overflow: auto; white-space: pre-wrap; }
+    .warn { background: #fff6d6; border-color: #c8a23a; }
+  </style>
+</head>
+<body>
+  <h1>Create accounts (run once)</h1>
+  <div class="card warn">
+    <b>Before you start:</b> fill in <code>js/config.js</code>, and in the Firebase console turn on
+    <i>Authentication → Sign-in method → Email/Password</i>. Accounts that already exist are skipped, so it is safe to run again.
+  </div>
+  <div class="card">
+    <label for="n">Number of pupils</label>
+    <input id="n" type="number" min="1" max="99" value="30">
+    <label for="pp">Pupil password</label>
+    <input id="pp" type="text" value="abc">
+    <label for="tp">Teacher password (username: <b>teacher</b>). Choose a strong one, at least 6 characters.</label>
+    <input id="tp" type="text" placeholder="your teacher password">
+    <button id="go" type="button">Create accounts</button>
+  </div>
+  <pre id="log">Waiting…</pre>
+  <script type="module">
+    import { FIREBASE_CONFIG, SETTINGS, DEMO_MODE } from "../js/config.js";
+    const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
+    const log = (s) => { const el = document.getElementById("log"); el.textContent += "\n" + s; el.scrollTop = el.scrollHeight; };
+    document.getElementById("log").textContent = DEMO_MODE
+      ? "⚠ js/config.js still has the placeholder values. Fill it in first, upload, then reload this page."
+      : "Ready. Firebase project: " + FIREBASE_CONFIG.projectId;
+
+    document.getElementById("go").addEventListener("click", async () => {
+      if (DEMO_MODE) return;
+      const btn = document.getElementById("go");
+      const n = Math.max(1, Math.min(99, Number(document.getElementById("n").value) || 30));
+      const pupilPw = document.getElementById("pp").value + SETTINGS.passwordSuffix;
+      const teacherPw = document.getElementById("tp").value;
+      if (teacherPw.length < 6) { alert("Teacher password must be at least 6 characters."); return; }
+      btn.disabled = true;
+      const { initializeApp } = await import(FB + "firebase-app.js");
+      const auth = await import(FB + "firebase-auth.js");
+      const a = auth.getAuth(initializeApp(FIREBASE_CONFIG, "creator"));
+      const domain = SETTINGS.emailDomain;
+      const accounts = [[SETTINGS.teacherUsername, teacherPw]];
+      for (let i = 1; i <= n; i++) accounts.push(["student" + String(i).padStart(2, "0"), pupilPw]);
+      let made = 0, skipped = 0, failed = 0;
+      for (const [user, pw] of accounts) {
+        try {
+          await auth.createUserWithEmailAndPassword(a, `${user}@${domain}`, pw);
+          await auth.signOut(a);
+          made++; log("✓ created " + user);
+        } catch (e) {
+          if (e.code === "auth/email-already-in-use") { skipped++; log("• " + user + " already exists – skipped"); }
+          else if (e.code === "auth/weak-password") {
+            failed++; log("✗ " + user + ": Firebase says the password is too short. Set passwordSuffix in js/config.js (e.g. \"123\"), upload, and run again.");
+            break;
+          } else { failed++; log("✗ " + user + ": " + (e.code || e.message)); }
+          if (e.code === "auth/too-many-requests") { log("Firebase is rate-limiting. Wait a few minutes and run again."); break; }
+        }
+        await new Promise((r) => setTimeout(r, 250));
+      }
+      log(`\nDone. Created ${made}, skipped ${skipped}, failed ${failed}.`);
+      log("Next: Firebase console → Authentication → Settings → User actions → untick 'Enable create (sign-up)'. This stops anyone else making accounts.");
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
