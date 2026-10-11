@@ -44,7 +44,7 @@ async function createFirebase() {
     demo: false,
     onAuth: (cb) => authMod.onAuthStateChanged(auth, (u) => cb(nameOf(u))),
     signIn: (username, password) =>
-      authMod.signInWithEmailAndPassword(auth, toEmail(username), toPassword(password)),
+      authMod.signInWithEmailAndPassword(auth, toEmail(username), isTeacherName(username) ? password : toPassword(password)),
     signOut: () => authMod.signOut(auth),
 
     async saveWork(username, lessonId, activityId, data) {
