@@ -163,7 +163,7 @@ function chooseActivity(def, ctx) {
     const ta = h("textarea", { rows: "3", class: "write-box", placeholder: def.why ? tx(def.why) : t("writeHere") });
     ta.value = st.why;
     ta.addEventListener("input", () => { st.why = ta.value; persist(); });
-    root.replaceChildren(h("div", { class: "choices" }, cards), def.why === null ? null : ta);
+    root.replaceChildren(h("div", { class: "choices" }, cards), ...(def.why === null ? [] : [ta]));
   }
   render();
   return shell(def, "act-choose", root);

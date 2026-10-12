@@ -244,7 +244,7 @@ function quizActivity(def, ctx) {
     });
     const n = def.questions.filter((q, i) => st.answers[i] === q.answer).length;
     const done = Object.keys(st.answers).length === def.questions.length;
-    root.replaceChildren(...qs, done ? scoreLine(n, def.questions.length) : null);
+    root.replaceChildren(...qs, ...(done ? [scoreLine(n, def.questions.length)] : []));
   }
   render();
   return shell(def, "act-quiz", root);
